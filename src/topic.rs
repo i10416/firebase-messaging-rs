@@ -13,10 +13,10 @@ const BATCH_ENDPOINT: &str = "https://iid.googleapis.com/iid/v1";
 /// [TopicManagementSupport] trait support APIs in https://developers.google.com/instance-id/reference/server
 #[async_trait]
 pub(crate) trait TopicManagementSupport: GenericGoogleRestAPISupport {
-    /// subscribe_one_to_topic registers a token to topic.
+    /// [register_token_to_topic] registers a token to topic.
     /// * topic - topic to follow. You don't need to add `/topics/` prefix.
     /// * token - registration token to be associated with the topic.
-    async fn subscribe_one_to_topic(
+    async fn register_token_to_topic(
         &self,
         topic: &str,
         token: &str,
@@ -24,10 +24,10 @@ pub(crate) trait TopicManagementSupport: GenericGoogleRestAPISupport {
         self.post_request(&put_endpoint(token, topic), ()).await
     }
 
-    /// subscribe_to_topic registers tokens to topic.
+    /// [register_tokens_to_topic] registers tokens to topic.
     /// * topic - topic to follow. You don't need to add `/topics/` prefix.
     /// * tokens - registration tokens to be associated with the topic.
-    async fn subscribe_to_topic(
+    async fn register_tokens_to_topic(
         &self,
         topic: String,
         tokens: Vec<String>,
@@ -36,10 +36,10 @@ pub(crate) trait TopicManagementSupport: GenericGoogleRestAPISupport {
         self.post_request(&format!("{BATCH_ENDPOINT}:batchAdd"), req)
             .await
     }
-    /// unsubscribe_to_topic unregisters tokens from topic.
+    /// [unregister_tokens_from_topic] unregisters tokens from topic.
     /// * topic - topic to follow. You don't need to add `/topics/` prefix.
     /// * tokens - registration tokens to be unregistered from the topic.
-    async fn unsubscribe_to_topic(
+    async fn unregister_tokens_from_topic(
         &self,
         topic: String,
         tokens: Vec<String>,

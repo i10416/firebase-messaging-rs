@@ -22,7 +22,7 @@ use std::sync::Arc;
 /// ```rust
 /// let client = FCMClient::new().await.unwrap();
 ///
-/// let res = client.subscribe_to_topic(
+/// let res = client.register_tokens_to_topic(
 ///   "topic_name".into(),
 ///     vec![token_0,token_1,...]
 ///   ).await.unwrap();
@@ -154,7 +154,7 @@ mod tests {
         let res = FCMClient::new()
             .await
             .expect("FCMClient initialization failed due to: ")
-            .subscribe_one_to_topic("topic_name".into(), "")
+            .register_token_to_topic("topic_name".into(), "")
             .await;
         assert!(matches!(res, Err(TopicManagementError::InvalidRequest)));
     }
@@ -164,7 +164,7 @@ mod tests {
         let res = FCMClient::new()
             .await
             .expect("FCMClient initialization failed due to: ")
-            .subscribe_to_topic("topic_name".into(), vec!["".into(), "".into(), "".into()])
+            .register_tokens_to_topic("topic_name".into(), vec!["".into(), "".into(), "".into()])
             .await
             .expect("Request Failed Due to: ");
         assert!(res
