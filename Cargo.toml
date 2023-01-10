@@ -1,0 +1,48 @@
+[package]
+name = "firebase-messaging-rs"
+version = "0.1.0"
+authors = [
+  "Yoichiro ITO <contact.110416@gmail.com>"
+]
+rust-version = "1.63"
+description = "An API to talk to FCM (Firebase Cloud Messaging) in Rust"
+license = "MIT OR Apache-2.0"
+homepage = "https://github.com/i10416/firebase-messaging-rs"
+repository = "https://github.com/i10416/firebase-messaging-rs"
+documentation = "https://docs.rs/firebase-messaging-rs/"
+keywords = ["fcm", "firebase", "notification"]
+edition = "2021"
+readme = "README.md"
+
+[badges]
+maintenance = { status = "actively-developed" }
+
+
+[features]
+default = ["native-tls"]
+native-tls = ["hyper-tls"]
+rustls = ["hyper-rustls"]
+vendored-tls = ["hyper-tls/vendored"]
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+gcloud-sdk = {features = ["rest"]}
+erased-serde = "0.3"
+chrono = "0.4"
+log = "0.4"
+hyper = { version = "0.14", features = ["client", "http1"] }
+hyper-tls = { version = "0.5", optional = true }
+hyper-rustls = { version = "0.22", optional = true }
+http = "0.2"
+async-trait = "0.1.61"
+
+[dev-dependencies]
+tokio = { version = "1.6", features = ["rt-multi-thread", "macros"] }
+pretty_env_logger = "0.3"
+
+[profile.dev]
+opt-level = 0
+
+[profile.release]
+opt-level = 3
