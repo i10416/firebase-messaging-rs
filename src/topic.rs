@@ -5,14 +5,16 @@ use crate::{GenericGoogleRestAPISupport, RPCError};
 use async_trait::async_trait;
 
 const INFO_ENDPOINT: &str = "https://iid.googleapis.com/iid/info/"; // + IID_TOKEN
-fn put_endpoint(iid_token: &str, topic_name: &str) -> String {
-    format!("https://iid.googleapis.com/iid/v1/{iid_token}/rel/topics/{topic_name}")
-}
+
 const BATCH_ENDPOINT: &str = "https://iid.googleapis.com/iid/v1";
 
 /// [TopicManagementSupport] trait support APIs in https://developers.google.com/instance-id/reference/server
+/// This trait provides topic management utilities.
 #[async_trait]
 pub(crate) trait TopicManagementSupport: GenericGoogleRestAPISupport {
+    fn put_endpoint(iid_token: &str, topic_name: &str) -> String {
+        format!("https://iid.googleapis.com/iid/v1/{iid_token}/rel/topics/{topic_name}")
+    }
     /// [register_token_to_topic] registers a token to topic.
     /// * topic - topic to follow. You don't need to add `/topics/` prefix.
     /// * token - registration token to be associated with the topic.
@@ -21,7 +23,8 @@ pub(crate) trait TopicManagementSupport: GenericGoogleRestAPISupport {
         topic: &str,
         token: &str,
     ) -> Result<HashMap<String, String>, TopicManagementError> {
-        self.post_request(&put_endpoint(token, topic), ()).await
+        self.post_request(&Self::put_endpoint(token, topic), ())
+            .await
     }
 
     /// [register_tokens_to_topic] registers tokens to topic.
@@ -121,15 +124,17 @@ impl From<RPCError> for TopicManagementError {
 #[derive(Debug, Clone, Deserialize)]
 pub struct TopicInfoResponse {
     /// example: "com.iid.example"
-    application: String,
+    pub application: String,
     /// example: "123456782354"
-    authorizedEnitity: String,
+    #[serde(rename = "authorizedEntity")]
+    pub authorized_entity: String,
 
     /// example: "Android"
-    platform: String,
+    pub platform: String,
     /// example: "1a2bc3d4e5"
-    appSigner: String,
-    rel: Rel,
+    #[serde(rename = "appSigner")]
+    pub app_signer: String,
+    pub rel: Rel,
 }
 
 /// example
@@ -145,7 +150,7 @@ pub struct TopicInfoResponse {
 /// ```
 #[derive(Debug, Clone, Deserialize)]
 pub struct Rel {
-    topics: HashMap<String, HashMap<String, String>>,
+    pub topics: HashMap<String, HashMap<String, String>>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -166,16 +171,16 @@ pub struct ImportRequest {
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct ImportResponse {
-    results: Vec<ImportResult>,
+    pub results: Vec<ImportResult>,
 }
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct ImportResult {
     /// example: "368dde283db539abc4a6419b1795b6131194703b816e4f624ffa12"
-    apn_token: String,
+    pub apn_token: String,
     /// example: "OK", "Internal Server Error"
-    status: String,
+    pub status: String,
     /// registration_token exists only if registration succeeds
     /// example: "nKctODamlM4:CKrh_PC8kIb7O...clJONHoA"
-    registration_token: Option<String>,
+    pub registration_token: Option<String>,
 }
