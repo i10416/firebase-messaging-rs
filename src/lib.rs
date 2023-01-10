@@ -141,8 +141,23 @@ pub enum RPCError {
 }
 
 #[cfg(test)]
+
 mod tests {
-    use crate::{topic::TopicManagementSupport, FCMClient};
+
+    use crate::{
+        topic::{TopicManagementError, TopicManagementSupport},
+        FCMClient,
+    };
+    #[tokio::test{flavor = "multi_thread"}]
+
+    async fn it_returns_errors_for_invalid_token() {
+        let res = FCMClient::new()
+            .await
+            .expect("FCMClient initialization failed due to: ")
+            .subscribe_one_to_topic("topic_name".into(), "")
+            .await;
+        assert!(matches!(res, Err(TopicManagementError::InvalidRequest)));
+    }
 
     #[tokio::test{flavor = "multi_thread"}]
     async fn it_returns_errors_for_invalid_tokens() {
