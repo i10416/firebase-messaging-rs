@@ -38,7 +38,7 @@ http = "0.2"
 async-trait = "0.1.62"
 
 [dev-dependencies]
-tokio = { version = "1.24", features = ["rt-multi-thread", "macros"] }
+tokio = { version = "1.25", features = ["rt-multi-thread", "macros"] }
 pretty_env_logger = "0.3"
 
 [profile.dev]
