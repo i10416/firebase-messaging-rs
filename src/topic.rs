@@ -18,6 +18,14 @@ pub(crate) trait TopicManagementSupport: GenericGoogleRestAPISupport {
     /// [register_token_to_topic] registers a token to topic.
     /// * topic - topic to follow. You don't need to add `/topics/` prefix.
     /// * token - registration token to be associated with the topic.
+    ///
+    /// NOTE
+    ///
+    /// Be careful that Google does not provide official API to retrieve tokens from topic.
+    /// In addition, Google does not automatically remove inactive or expired tokens.
+    ///
+    /// Therefore, it is recommended that developers keep track of token and topic relation (e.g. storing relation in database)
+    /// with its modification timestamp so that they can get more control over firebase cloud messaging.
     async fn register_token_to_topic(
         &self,
         topic: &str,
@@ -44,12 +52,31 @@ pub(crate) trait TopicManagementSupport: GenericGoogleRestAPISupport {
     /// * tokens - registration tokens to be unregistered from the topic.
     async fn unregister_tokens_from_topic(
         &self,
-        topic: String,
+        topic: &str,
         tokens: Vec<String>,
     ) -> Result<TopicManagementResponse, TopicManagementError> {
         let req = Request::unsubscribe(format!("/topics/{topic}"), tokens);
         self.post_request(&format!("{BATCH_ENDPOINT}:batchRemove"), req)
             .await
+    }
+    /// [get_info_by_iid_token] get information about topics accosiated to the given token. Information may contain application id, authorized_entity, platform, etc.
+    ///
+    /// See [TopicInfoResponse] for more detail.
+    ///
+    /// * token - get information for this token
+    /// * details - response contains `rel` field if and only if `details` flag is true. `rel` field contains all the topics that the `token` is accosiated to.
+    ///
+    async fn get_info_by_iid_token(
+        &self,
+        token: &str,
+        details: bool,
+    ) -> Result<TopicInfoResponse, TopicManagementError> {
+        let request_url = if details {
+            format!("https://iid.googleapis.com/iid/info/{token}?details=true")
+        } else {
+            format!("https://iid.googleapis.com/iid/info/{token}")
+        };
+        self.get_request(&request_url).await
     }
 }
 
@@ -80,7 +107,7 @@ impl Request {
 ///  "results":[
 ///    {}, // registration suceeded
 ///    {"error":"NOT_FOUND"}, // registration token has been deleted or app has been uninstalled
-///    {"error":"INVALID_ARGUMENT"},
+///    {"error":"INVALID_ARGUMENT"}, // registration token is invalid
 ///    {"error":"INTERNAL"}, // internal server error
 ///    {"error":"TOO_MANY_TOPICS"}, // app has too many topics
 ///    {},
@@ -129,20 +156,21 @@ pub struct TopicInfoResponse {
     #[serde(rename = "authorizedEntity")]
     pub authorized_entity: String,
 
-    /// example: "Android"
+    /// example: "Android", "ANDROID"
     pub platform: String,
     /// example: "1a2bc3d4e5"
     #[serde(rename = "appSigner")]
     pub app_signer: String,
-    pub rel: Rel,
+    /// If and only if user specifies `details` flag on request, this field may `Some<Rel>`.
+    pub rel: Option<Rel>,
 }
 
 /// example
 /// ```json
 /// {
 ///    "topics":{
-///       "topicname1":{"addDate":"2015-07-30"},
-///       "topicname2":{"addDate":"2015-07-30"},
+///       "topicname1":{ "addDate":"2015-07-30"},
+///       "topicname2":{ "addDate":"2015-07-30"},
 ///       "topicname3":{"addDate":"2015-07-30"},
 ///       "topicname4":{"addDate":"2015-07-30"}
 ///     }

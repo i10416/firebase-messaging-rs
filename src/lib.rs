@@ -1,8 +1,8 @@
 use async_trait::async_trait;
 use gcloud_sdk::{GoogleAuthTokenGenerator, TokenSourceType};
 use http::{
-    header::{AUTHORIZATION, CONTENT_LENGTH, CONTENT_TYPE},
-    Request, StatusCode,
+    header::{ACCEPT, AUTHORIZATION, CONTENT_LENGTH, CONTENT_TYPE},
+    Request, Response, StatusCode,
 };
 use hyper::{client::HttpConnector, Body};
 use hyper_tls::HttpsConnector;
@@ -90,6 +90,7 @@ trait GenericGoogleRestAPISupport {
             .uri(endpoint)
             .method("POST")
             .header(CONTENT_TYPE, "application/json")
+            .header(ACCEPT, "application/json")
             .header(AUTHORIZATION, auth_header_value)
             .header("access_token_auth", "true")
             // This enables authorization based on oauth2 access_token. Without this, We must use unsafe serverKey.
@@ -104,6 +105,42 @@ trait GenericGoogleRestAPISupport {
             .await
             .map_err(|_| RPCError::HttpRequestFailure) // FIXME: propagate error info
             .map_err(E::from)?;
+        Self::handle_response_body(res).await
+    }
+
+    async fn get_request<R: for<'a> Deserialize<'a> + Clone, E: From<RPCError>>(
+        &self,
+        endpoint: &str,
+    ) -> Result<R, E> {
+        let auth_header_value = self
+            .get_header_token()
+            .await
+            .map_err(|_| RPCError::Unauthorized("unable to get header token".into()))
+            .map_err(E::from)?;
+        let req = Request::builder()
+            .uri(endpoint)
+            .method("GET")
+            .header(CONTENT_TYPE, "application/json")
+            .header(ACCEPT, "application/json")
+            .header(AUTHORIZATION, auth_header_value)
+            .header("access_token_auth", "true")
+            // This enables authorization based on oauth2 access_token. Without this, We must use unsafe serverKey.
+            // https://github.com/firebase/firebase-admin-go/blob/beaa6ae763d2fb57650760b9703cd91cc7c14b9b/messaging/topic_mgt.go#L69
+            .body(Body::empty()) // NOTE: what is difference between Body::empty() and ()?
+            .map_err(|_| RPCError::BuildRequestFailure) // FIXME: don't swallow error! propagate error info
+            .map_err(E::from)?;
+        let res = self
+            .get_http_client()
+            .request(req)
+            .await
+            .map_err(|_| RPCError::HttpRequestFailure) // FIXME: don't swallow error! propagate error info
+            .map_err(E::from)?;
+        Self::handle_response_body(res).await
+    }
+
+    async fn handle_response_body<R: for<'a> Deserialize<'a> + Clone, E: From<RPCError>>(
+        res: Response<Body>,
+    ) -> Result<R, E> {
         match res.status() {
             StatusCode::OK => {
                 let buf = hyper::body::to_bytes(res)
@@ -153,7 +190,9 @@ mod tests {
     async fn it_returns_errors_for_invalid_token() {
         let res = FCMClient::new()
             .await
-            .expect("FCMClient initialization failed due to: ")
+            .expect(
+                "FCMClient initialization failed. Did you export GOOGLE_APPLICATION_CREDENTIALS?",
+            )
             .register_token_to_topic("topic_name".into(), "")
             .await;
         assert!(matches!(res, Err(TopicManagementError::InvalidRequest)));
@@ -163,13 +202,35 @@ mod tests {
     async fn it_returns_errors_for_invalid_tokens() {
         let res = FCMClient::new()
             .await
-            .expect("FCMClient initialization failed due to: ")
+            .expect(
+                "FCMClient initialization failed. Did you export GOOGLE_APPLICATION_CREDENTIALS?",
+            )
             .register_tokens_to_topic("topic_name".into(), vec!["".into(), "".into(), "".into()])
             .await
             .expect("Request Failed Due to: ");
-        assert!(res
-            .results
-            .iter()
-            .all(|result| result.get("error").is_some()));
+        let error_results = res.results;
+        assert!(error_results.iter().all(|result| {
+            match result.get("error") {
+                Some(msg) => msg == "INVALID_ARGUMENT",
+                _ => false,
+            }
+        }));
+    }
+    #[allow(unused)]
+    #[tokio::test{ flavor = "multi_thread"}]
+    async fn testit() {
+        // let topic_name = std::env::var("TEST_FIREBASE_TOPIC_NAME").expect("TEST_FIREBASE_TOPIC_NAME not found.");
+        // let tkn = std::env::var("TEST_FIREBASE_IID_TOKEN").expect("TEST_FIREBASE_IID_TOKEN not found");
+        let topic_name = "NOPE";
+        let tkn = "NOPE";
+        let c = FCMClient::new().await.expect(
+            "FCMClient initialization failed. Did you export GOOGLE_APPLICATION_CREDENTIALS?",
+        );
+        let sts = c.get_info_by_iid_token(tkn, true).await;
+        let res = c.register_token_to_topic(topic_name, tkn).await;
+        let res = c
+            .unregister_tokens_from_topic(topic_name, vec![tkn.into()])
+            .await;
+        let sts = c.get_info_by_iid_token(tkn, true).await;
     }
 }
