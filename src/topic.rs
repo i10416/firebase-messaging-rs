@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use crate::{GenericGoogleRestAPISupport, RPCError};
 use async_trait::async_trait;
 
-const INFO_ENDPOINT: &str = "https://iid.googleapis.com/iid/info/"; // + IID_TOKEN
+const INFO_ENDPOINT: &str = "https://iid.googleapis.com/iid/info"; // + IID_TOKEN
 
 const BATCH_ENDPOINT: &str = "https://iid.googleapis.com/iid/v1";
 
@@ -72,9 +72,9 @@ pub(crate) trait TopicManagementSupport: GenericGoogleRestAPISupport {
         details: bool,
     ) -> Result<TopicInfoResponse, TopicManagementError> {
         let request_url = if details {
-            format!("https://iid.googleapis.com/iid/info/{token}?details=true")
+            format!("{INFO_ENDPOINT}/{token}?details=true")
         } else {
-            format!("https://iid.googleapis.com/iid/info/{token}")
+            format!("{INFO_ENDPOINT}/{token}")
         };
         self.get_request(&request_url).await
     }
