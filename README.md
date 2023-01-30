@@ -30,17 +30,48 @@ firebase-messaging-rs  = {git = "ssh://git@github.com/i10416/firebase-messaging-
 
 ## Example
 
+
+### register token to topic and un-register token from topic
+
 ```rust
+// you need export GOOGLE_APPLICATION_CREDENTIALS env to authenticate to Firebase.
 let client = FCMClient::new().await.unwrap();
 
+
+let topic_name = "topic_name";
+// bulk register tokens
 let res = client.register_tokens_to_topic(
-  "topic_name".into(),
+  topic_name.into(),
   vec![token_0,token_1,...]
 ).await.unwrap();
 
-println!("{:?}",res);
+println!("{res:?}");
 // => TopicManagementResponse {results: [{}, {"error": "INVALID_ARGUMENT"}, ...] }
+
+let sts = c.get_info_by_iid_token(token_0, true).await.unwrap();
+println!("{sts:?}");
+// => Ok(
+//  TopicInfoResponse {
+//    application: "com.example.app.name",
+//    authorized_entity: "123456789012",
+//    platform: "ANDROID",
+//    app_signer: "....",
+//    rel: Some(
+//      topics: {"topic_name" : { "addDate: : "yyyy-MM-dd" }}
+//    )
+//  }
+//)
+
+// un-register token from topic
+let res = client.unregister_token_from_topic(
+  topic_name,
+  token_0
+).await.unwrap();
+// => Ok(TopicManagementResponse { results: [{}] })
+
+
 ```
+
 
 ## License
 
