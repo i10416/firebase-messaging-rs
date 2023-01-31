@@ -8,7 +8,7 @@ use hyper::{client::HttpConnector, Body};
 use hyper_tls::HttpsConnector;
 use serde::Deserialize;
 use topic::TopicManagementSupport;
-mod topic;
+pub mod topic;
 use gcloud_sdk::GCP_DEFAULT_SCOPES;
 use std::sync::Arc;
 
