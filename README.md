@@ -1,5 +1,7 @@
 ## firebase-messaging-rs
 
+[![ci](https://github.com/i10416/firebase-messaging-rs/actions/workflows/ci.yaml/badge.svg)](https://github.com/i10416/firebase-messaging-rs/actions/workflows/ci.yaml)
+
 ## Install
 
 Cargo.toml
