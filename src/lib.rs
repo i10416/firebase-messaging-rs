@@ -68,7 +68,7 @@ impl GenericGoogleRestAPISupport for FCMClient {
 }
 
 #[async_trait]
-trait GenericGoogleRestAPISupport {
+pub trait GenericGoogleRestAPISupport {
     async fn get_header_token(&self) -> Result<String, gcloud_sdk::error::Error>;
     fn get_http_client(&self) -> hyper::Client<HttpsConnector<HttpConnector>, Body>;
     async fn post_request<

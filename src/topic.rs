@@ -11,7 +11,7 @@ const BATCH_ENDPOINT: &str = "https://iid.googleapis.com/iid/v1";
 /// [TopicManagementSupport] trait support APIs in https://developers.google.com/instance-id/reference/server
 /// This trait provides topic management utilities.
 #[async_trait]
-pub(crate) trait TopicManagementSupport: GenericGoogleRestAPISupport {
+pub trait TopicManagementSupport: GenericGoogleRestAPISupport {
     fn put_endpoint(iid_token: &str, topic_name: &str) -> String {
         format!("https://iid.googleapis.com/iid/v1/{iid_token}/rel/topics/{topic_name}")
     }
