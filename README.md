@@ -5,7 +5,7 @@
 Cargo.toml
 
 ```toml
-firebase-messaging-rs  = {git = "ssh://git@github.com/i10416/firebase-messaging-rs.git", branch = "main", version = "0.2"}
+firebase-messaging-rs  = {git = "ssh://git@github.com/i10416/firebase-messaging-rs.git", branch = "main", version = "0.4"}
 
 # wip: firebase-messaging-rs = "0.2"
 
@@ -23,7 +23,7 @@ General features like authorization are delegated to [gcloud-sdk-rs](https://git
 You can choose tls backend from native-tls or rustls.
 
 ```toml
-firebase-messaging-rs  = {git = "ssh://git@github.com/i10416/firebase-messaging-rs.git", branch = "main", version = "0.2", features = ["rustls"] }
+firebase-messaging-rs  = {git = "ssh://git@github.com/i10416/firebase-messaging-rs.git", branch = "main", version = "0.4", features = ["rustls"] }
 
 # wip: firebase-messaging-rs = { version = "<version>", features = ["rustls"] }
 ```
