@@ -34,6 +34,9 @@ firebase-messaging-rs  = {git = "ssh://git@github.com/i10416/firebase-messaging-
 ### register token to topic and un-register token from topic
 
 ```rust
+use firebase_messaging_rs::FCMClient;
+use firebase_messaging_rs::topic::TopicManagementSupport;
+
 // you need export GOOGLE_APPLICATION_CREDENTIALS env to authenticate to Firebase.
 let client = FCMClient::new().await.unwrap();
 
