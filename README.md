@@ -17,7 +17,7 @@ firebase-messaging-rs  = {git = "ssh://git@github.com/i10416/firebase-messaging-
 
 This crate implements some wrapper functions for google FCM APIs and Instant ID APIs.
 
-General features like authorization are delegated to [gcloud-sdk-rs](https://github.com/abdolence/gcloud-sdk-rs) under the hood.
+General features like authorization are delegated to [gcloud-sdk-rs](https://github.com/abdolence/gcloud-sdk-rs) under the hood, so you can use oauth2 and OIDC instead of API_KEY.
 
 
 ## Features
