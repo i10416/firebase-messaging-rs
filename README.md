@@ -30,6 +30,15 @@ firebase-messaging-rs  = {git = "ssh://git@github.com/i10416/firebase-messaging-
 # wip: firebase-messaging-rs = { version = "<version>", features = ["rustls"] }
 ```
 
+## required GCP roles
+
+Your service account needs following GCP roles.
+
+| api                            | roles                              |
+| ------------------------------ | ---------------------------------- |
+| https://iid.googleapis.com/iid | roles/identityplatform.admin       |
+|                                | roles/firebasecloudmessaging.admin |
+|                                | roles/cloudconfig.admin            |
 ## Example
 
 
@@ -39,7 +48,8 @@ firebase-messaging-rs  = {git = "ssh://git@github.com/i10416/firebase-messaging-
 use firebase_messaging_rs::FCMClient;
 use firebase_messaging_rs::topic::TopicManagementSupport;
 
-// you need export GOOGLE_APPLICATION_CREDENTIALS env to authenticate to Firebase.
+// you need to have application_default_credentials.json at $HOME/.config/gcloud directory
+// or export GOOGLE_APPLICATION_CREDENTIALS env to authenticate to Firebase.
 let client = FCMClient::new().await.unwrap();
 
 
