@@ -32,7 +32,12 @@ firebase-messaging-rs  = {git = "ssh://git@github.com/i10416/firebase-messaging-
 
 ## required GCP roles
 
-Your service account needs following GCP roles.
+Your service account needs following GCP role(s).
+
+- roles/firebase.sdkAdminServiceAgent.
+
+If you need fine-grained permissions, see the table bellow and grant required roles for each api. 
+
 
 | api                            | roles                              |
 | ------------------------------ | ---------------------------------- |
