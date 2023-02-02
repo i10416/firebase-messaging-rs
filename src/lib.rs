@@ -1,4 +1,3 @@
-use async_trait::async_trait;
 use gcloud_sdk::{GoogleAuthTokenGenerator, TokenSourceType};
 use http::{
     header::{ACCEPT, AUTHORIZATION, CONTENT_LENGTH, CONTENT_TYPE},
@@ -9,6 +8,7 @@ use hyper_tls::HttpsConnector;
 use serde::Deserialize;
 use topic::TopicManagementSupport;
 pub mod topic;
+use async_trait::async_trait;
 use gcloud_sdk::GCP_DEFAULT_SCOPES;
 use std::sync::Arc;
 

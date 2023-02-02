@@ -3,7 +3,6 @@ use std::collections::HashMap;
 
 use crate::{GenericGoogleRestAPISupport, RPCError};
 use async_trait::async_trait;
-
 const INFO_ENDPOINT: &str = "https://iid.googleapis.com/iid/info"; // + IID_TOKEN
 
 const BATCH_ENDPOINT: &str = "https://iid.googleapis.com/iid/v1";
