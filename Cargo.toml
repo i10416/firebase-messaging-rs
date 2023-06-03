@@ -38,7 +38,7 @@ http = "0.2"
 async-trait = "0.1.68"
 [dev-dependencies]
 tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
-pretty_env_logger = "0.4"
+pretty_env_logger = "0.5"
 
 [profile.dev]
 opt-level = 0
