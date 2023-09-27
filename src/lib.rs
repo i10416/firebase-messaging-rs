@@ -1,4 +1,7 @@
-use gcloud_sdk::{GoogleAuthTokenGenerator, TokenSourceType};
+pub mod topic;
+
+use async_trait::async_trait;
+use gcloud_sdk::{GoogleAuthTokenGenerator, TokenSourceType, GCP_DEFAULT_SCOPES};
 use http::{
     header::{ACCEPT, AUTHORIZATION, CONTENT_LENGTH, CONTENT_TYPE},
     Request, Response, StatusCode,
@@ -6,11 +9,8 @@ use http::{
 use hyper::{client::HttpConnector, Body};
 use hyper_tls::HttpsConnector;
 use serde::Deserialize;
-use topic::TopicManagementSupport;
-pub mod topic;
-use async_trait::async_trait;
-use gcloud_sdk::GCP_DEFAULT_SCOPES;
 use std::sync::Arc;
+use topic::TopicManagementSupport;
 
 /// [FCMClient] implements some wrapper functions for google FCM APIs and Instant ID APIs.
 ///
