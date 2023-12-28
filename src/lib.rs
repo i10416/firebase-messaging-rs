@@ -219,18 +219,18 @@ mod tests {
     #[allow(unused)]
     #[tokio::test{ flavor = "multi_thread"}]
     async fn testit() {
-        // let topic_name = std::env::var("TEST_FIREBASE_TOPIC_NAME").expect("TEST_FIREBASE_TOPIC_NAME not found.");
-        // let tkn = std::env::var("TEST_FIREBASE_IID_TOKEN").expect("TEST_FIREBASE_IID_TOKEN not found");
-        let topic_name = "NOPE";
-        let tkn = "NOPE";
+        let topic_name =
+            std::env::var("TEST_FIREBASE_TOPIC_NAME").expect("TEST_FIREBASE_TOPIC_NAME not found.");
+        let tkn =
+            std::env::var("TEST_FIREBASE_IID_TOKEN").expect("TEST_FIREBASE_IID_TOKEN not found");
         let c = FCMClient::new().await.expect(
             "FCMClient initialization failed. Did you export GOOGLE_APPLICATION_CREDENTIALS?",
         );
-        let sts = c.get_info_by_iid_token(tkn, true).await;
-        let res = c.register_token_to_topic(topic_name, tkn).await;
+        let sts = c.get_info_by_iid_token("nope", true).await;
+        let res = c.register_token_to_topic(&topic_name, &tkn).await;
         let res = c
-            .unregister_tokens_from_topic(topic_name, vec![tkn.into()])
+            .unregister_tokens_from_topic(&topic_name, vec![tkn.clone().into()])
             .await;
-        let sts = c.get_info_by_iid_token(tkn, true).await;
+        let sts = c.get_info_by_iid_token(&tkn, true).await;
     }
 }
