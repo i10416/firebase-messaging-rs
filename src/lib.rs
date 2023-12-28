@@ -226,7 +226,7 @@ mod tests {
         let c = FCMClient::new().await.expect(
             "FCMClient initialization failed. Did you export GOOGLE_APPLICATION_CREDENTIALS?",
         );
-        let sts = c.get_info_by_iid_token("nope", true).await;
+        let sts = c.get_info_by_iid_token(&tkn, true).await;
         let res = c.register_token_to_topic(&topic_name, &tkn).await;
         let res = c
             .unregister_tokens_from_topic(&topic_name, vec![tkn.clone().into()])
