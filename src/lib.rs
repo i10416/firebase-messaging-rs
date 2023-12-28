@@ -1,7 +1,9 @@
 pub mod topic;
 
 use async_trait::async_trait;
-use gcloud_sdk::{GoogleAuthTokenGenerator, TokenSourceType, GCP_DEFAULT_SCOPES};
+use gcloud_sdk::{
+    google::devtools::source, GoogleAuthTokenGenerator, TokenSourceType, GCP_DEFAULT_SCOPES,
+};
 use http::{
     header::{ACCEPT, AUTHORIZATION, CONTENT_LENGTH, CONTENT_TYPE},
     Request, Response, StatusCode,
@@ -147,8 +149,12 @@ pub trait GenericGoogleRestAPISupport {
                     .await
                     .map_err(|_| RPCError::DecodeFailure)
                     .map_err(E::from)?;
+                let text = std::str::from_utf8(&buf).unwrap_or_default();
                 serde_json::from_slice::<R>(&buf)
-                    .map_err(|_| RPCError::DeserializeFailure)
+                    .map_err(|e| RPCError::DeserializeFailure {
+                        reason: format!("{e:?}"),
+                        source: text.to_string(),
+                    })
                     .map_err(E::from)
             }
             StatusCode::UNAUTHORIZED => {
@@ -171,7 +177,7 @@ pub enum RPCError {
     BuildRequestFailure(String),
     HttpRequestFailure,
     DecodeFailure,
-    DeserializeFailure,
+    DeserializeFailure { reason: String, source: String },
     InvalidRequest,
     Internal,
     Unknown(u16),

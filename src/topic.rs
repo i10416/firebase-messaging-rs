@@ -148,8 +148,8 @@ impl From<RPCError> for TopicManagementError {
             RPCError::DecodeFailure => Self::InternalResponseError {
                 msg: "unable to decode response body bytes".to_string(),
             },
-            RPCError::DeserializeFailure => Self::InternalResponseError {
-                msg: "unable to deserialize response body to type".to_string(),
+            RPCError::DeserializeFailure { reason, source } => Self::InternalResponseError {
+                msg: format!("unable to deserialize response body to type: {reason}: {source}"),
             },
             RPCError::Unauthorized(msg) => Self::Unauthorized(msg),
             RPCError::InvalidRequest => Self::InvalidRequest,
