@@ -1,6 +1,6 @@
 pub mod topic;
-
 use async_trait::async_trait;
+pub use gcloud_sdk::tonic;
 use gcloud_sdk::{GoogleAuthTokenGenerator, TokenSourceType, GCP_DEFAULT_SCOPES};
 use http::{
     header::{ACCEPT, AUTHORIZATION, CONTENT_LENGTH, CONTENT_TYPE},
