@@ -93,11 +93,11 @@ pub trait GenericGoogleRestAPISupport {
             .header(ACCEPT, "application/json")
             .header(AUTHORIZATION, auth_header_value)
             .header("access_token_auth", "true")
-            // This enables authorization based on oauth2 access_token. Without this, We must use unsafe serverKey.
+            // `access_token_auth` enables authorization based on oauth2 access_token. Without this, We must use unsafe serverKey.
             // https://github.com/firebase/firebase-admin-go/blob/beaa6ae763d2fb57650760b9703cd91cc7c14b9b/messaging/topic_mgt.go#L69
             .header(CONTENT_LENGTH, format!("{}", payload.len() as u64))
             .body(Body::from(payload))
-            .map_err(|_| RPCError::BuildRequestFailure) // FIXME: propagate error info
+            .map_err(|e| RPCError::BuildRequestFailure(format!("{e:?}")))
             .map_err(E::from)?;
         let res = self
             .get_http_client()
@@ -124,10 +124,10 @@ pub trait GenericGoogleRestAPISupport {
             .header(ACCEPT, "application/json")
             .header(AUTHORIZATION, auth_header_value)
             .header("access_token_auth", "true")
-            // This enables authorization based on oauth2 access_token. Without this, We must use unsafe serverKey.
+            // `access_token_auth` enables authorization based on oauth2 access_token. Without this, We must use unsafe serverKey.
             // https://github.com/firebase/firebase-admin-go/blob/beaa6ae763d2fb57650760b9703cd91cc7c14b9b/messaging/topic_mgt.go#L69
             .body(Body::empty()) // NOTE: what is difference between Body::empty() and ()?
-            .map_err(|_| RPCError::BuildRequestFailure) // FIXME: don't swallow error! propagate error info
+            .map_err(|e| RPCError::BuildRequestFailure(format!("{e:?}"))) // FIXME: don't swallow error! propagate error info
             .map_err(E::from)?;
         let res = self
             .get_http_client()
@@ -168,7 +168,7 @@ pub trait GenericGoogleRestAPISupport {
 #[derive(Debug, Clone)]
 pub enum RPCError {
     Unauthorized(String),
-    BuildRequestFailure,
+    BuildRequestFailure(String),
     HttpRequestFailure,
     DecodeFailure,
     DeserializeFailure,
