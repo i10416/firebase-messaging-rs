@@ -1,9 +1,7 @@
 pub mod topic;
 
 use async_trait::async_trait;
-use gcloud_sdk::{
-    google::devtools::source, GoogleAuthTokenGenerator, TokenSourceType, GCP_DEFAULT_SCOPES,
-};
+use gcloud_sdk::{GoogleAuthTokenGenerator, TokenSourceType, GCP_DEFAULT_SCOPES};
 use http::{
     header::{ACCEPT, AUTHORIZATION, CONTENT_LENGTH, CONTENT_TYPE},
     Request, Response, StatusCode,
@@ -129,7 +127,7 @@ pub trait GenericGoogleRestAPISupport {
             // `access_token_auth` enables authorization based on oauth2 access_token. Without this, We must use unsafe serverKey.
             // https://github.com/firebase/firebase-admin-go/blob/beaa6ae763d2fb57650760b9703cd91cc7c14b9b/messaging/topic_mgt.go#L69
             .body(Body::empty()) // NOTE: what is difference between Body::empty() and ()?
-            .map_err(|e| RPCError::BuildRequestFailure(format!("{e:?}"))) // FIXME: don't swallow error! propagate error info
+            .map_err(|e| RPCError::BuildRequestFailure(format!("{e:?}")))
             .map_err(E::from)?;
         let res = self
             .get_http_client()
