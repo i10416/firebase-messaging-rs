@@ -127,18 +127,30 @@ pub enum TopicManagementError {
     /// 1. your topic name is correct
     InvalidRequest,
     ServerError,
-    InternalRequestError,
-    InternalResponseError,
+    InternalRequestError {
+        msg: String,
+    },
+    InternalResponseError {
+        msg: String,
+    },
     Unknown,
 }
 
 impl From<RPCError> for TopicManagementError {
     fn from(e: RPCError) -> Self {
         match e {
-            RPCError::BuildRequestFailure => Self::InternalRequestError, // FIXME gulanuarity
-            RPCError::HttpRequestFailure => Self::InternalRequestError,
-            RPCError::DecodeFailure => Self::InternalResponseError,
-            RPCError::DeserializeFailure => Self::InternalResponseError,
+            RPCError::BuildRequestFailure(str) => Self::InternalRequestError {
+                msg: format!("unable to build a request: {str}"),
+            },
+            RPCError::HttpRequestFailure => Self::InternalRequestError {
+                msg: "unable to process http request".to_string(),
+            },
+            RPCError::DecodeFailure => Self::InternalResponseError {
+                msg: "unable to decode response body bytes".to_string(),
+            },
+            RPCError::DeserializeFailure => Self::InternalResponseError {
+                msg: "unable to deserialize response body to type".to_string(),
+            },
             RPCError::Unauthorized(msg) => Self::Unauthorized(msg),
             RPCError::InvalidRequest => Self::InvalidRequest,
             RPCError::Internal => Self::ServerError,
