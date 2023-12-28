@@ -69,7 +69,7 @@ pub trait TopicManagementSupport: GenericGoogleRestAPISupport {
         &self,
         token: &str,
         details: bool,
-    ) -> Result<TopicInfoResponse, TopicManagementError> {
+    ) -> Result<TopicInfoResponseKind, TopicManagementError> {
         let request_url = if details {
             format!("{INFO_ENDPOINT}/{token}?details=true")
         } else {
@@ -174,6 +174,64 @@ pub struct TopicInfoResponse {
     pub app_signer: String,
     /// If and only if user specifies `details` flag on request, this field may `Some<Rel>`.
     pub rel: Option<Rel>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+#[serde(untagged)]
+pub enum TopicInfoResponseKind {
+    Android {
+        /// application identifier
+        ///
+        /// example: "com.iid.example"
+        application: String,
+        /// example: "123456782354"
+        #[serde(rename = "authorizedEntity")]
+        authorized_entity: String,
+        /// example: "Android", "ANDROID"
+        platform: String,
+        /// example: "1a2bc3d4e5"
+        #[serde(rename = "appSigner")]
+        app_signer: String,
+        /// If and only if user specifies `details` flag on request, this field may `Some<Rel>`.
+        rel: Option<Rel>,
+    },
+    IOS {
+        /// example: "com.iid.example"
+        application: String,
+        /// example: "123456782354"
+        #[serde(rename = "authorizedEntity")]
+        authorized_entity: String,
+        /// example: "IOS"
+        platform: String,
+        /// example: "0.1"
+        #[serde(rename = "applicationVersion")]
+        application_version: String,
+        /// example: 9k4686bfad163b37a1cb57k39018f42a
+        #[serde(rename = "gmiRegistrationId")]
+        gmi_registration_id: String,
+        /// example: "*"
+        scope: String,
+    },
+}
+impl TopicInfoResponseKind {
+    pub fn application(&self) -> String {
+        match self {
+            Self::Android { application, .. } => application.to_string(),
+            Self::IOS { application, .. } => application.to_string(),
+        }
+    }
+    pub fn platform(&self) -> String {
+        match self {
+            Self::Android { platform, .. } => platform.to_string(),
+            Self::IOS { platform, .. } => platform.to_string(),
+        }
+    }
+    pub fn rel(&self) -> Option<Rel> {
+        match self {
+            Self::Android { rel, .. } => rel.clone(),
+            Self::IOS { .. } => None,
+        }
+    }
 }
 
 /// example
