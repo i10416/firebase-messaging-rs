@@ -158,7 +158,7 @@ impl From<RPCError> for TopicManagementError {
         }
     }
 }
-
+#[deprecated(since = "0.8.3", note = "Use TopicInfoResponseKind instead.")]
 #[derive(Debug, Clone, Deserialize)]
 pub struct TopicInfoResponse {
     /// example: "com.iid.example"
@@ -191,7 +191,7 @@ pub enum TopicInfoResponseKind {
         platform: String,
         /// example: "1a2bc3d4e5"
         #[serde(rename = "appSigner")]
-        app_signer: String,
+        app_signer: Option<String>,
         /// If and only if user specifies `details` flag on request, this field may `Some<Rel>`.
         rel: Option<Rel>,
     },
