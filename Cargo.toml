@@ -1,6 +1,6 @@
 [package]
 name = "firebase-messaging-rs"
-version = "0.8.2"
+version = "0.8.3"
 authors = [
   "Yoichiro ITO <contact.110416@gmail.com>"
 ]
