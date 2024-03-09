@@ -171,7 +171,7 @@ pub struct TopicInfoResponse {
     pub platform: String,
     /// example: "1a2bc3d4e5"
     #[serde(rename = "appSigner")]
-    pub app_signer: String,
+    pub app_signer: Option<String>,
     /// If and only if user specifies `details` flag on request, this field may `Some<Rel>`.
     pub rel: Option<Rel>,
 }
