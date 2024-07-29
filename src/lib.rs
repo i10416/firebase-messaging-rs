@@ -7,6 +7,9 @@ use http::{
     Request, Response, StatusCode,
 };
 use hyper::{client::HttpConnector, Body};
+#[cfg(feature = "hyper-rustls")]
+use hyper_rustls::HttpsConnector;
+#[cfg(feature = "hyper-tls")]
 use hyper_tls::HttpsConnector;
 use serde::Deserialize;
 use std::sync::Arc;
@@ -41,7 +44,12 @@ impl FCMClient {
         let connector = HttpsConnector::new();
 
         #[cfg(feature = "hyper-rustls")]
-        let connector = HttpsConnector::with_native_roots();
+        let connector = hyper_rustls::HttpsConnectorBuilder::new()
+            .with_native_roots()
+            .map_err(|_| "unable to load native roots for https connector".to_string())?
+            .https_or_http()
+            .enable_http1()
+            .build();
 
         let token_gen =
             GoogleAuthTokenGenerator::new(TokenSourceType::Default, GCP_DEFAULT_SCOPES.clone())
