@@ -72,9 +72,10 @@ pub trait TopicManagementSupport: GenericGoogleRestAPISupport {
         )
         .await
     }
-    /// [[TopicManagementSupport::get_info_by_iid_token]] get information about topics accosiated to the given token. Information may contain application id, authorized_entity, platform, etc.
+    /// [[TopicManagementSupport::get_info_by_iid_token]] gets information about topics associated to the given token.
+    /// Information may contain application id, authorized_entity, platform, etc.
     ///
-    /// See [TopicInfoResponse] for more detail.
+    /// See [[TopicInfoResponseKind]] for more detail.
     ///
     /// * token - get information for this token
     /// * details - response contains `rel` field if and only if `details` flag is true. `rel` field contains all the topics that the `token` is accosiated to.
