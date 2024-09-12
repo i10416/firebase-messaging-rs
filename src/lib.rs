@@ -57,14 +57,18 @@ impl FCMClient {
             .ok()
     }
     pub async fn new() -> Result<Self, String> {
+        #[cfg(feature = "fcm")]
         let project_id = Self::google_cloud_project().ok_or(
-            "cannot detect google project id from env. Provide project id by GOOGLE_CLOUD_PROJECT env var.".to_string(),
+            "Cannot detect google project id from env. Provide project id by GOOGLE_CLOUD_PROJECT env var.".to_string(),
         )?;
+        #[cfg(not(feature = "fcm"))]
+        let project_id = "dummy id for compatibility".to_string();
         FCMClient::with_scope(&project_id, &GCP_DEFAULT_SCOPES).await
     }
     pub async fn new_with_project(project_id: &str) -> Result<Self, String> {
         FCMClient::with_scope(project_id, &GCP_DEFAULT_SCOPES).await
     }
+
     pub async fn with_scope(project_id: &str, scopes: &[String]) -> Result<Self, String> {
         #[cfg(feature = "hyper-tls")]
         let connector = HttpsConnector::new();
