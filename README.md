@@ -51,11 +51,7 @@ If you need fine-grained permissions, see the table bellow and grant required ro
 
 ```rust no_run
 use firebase_messaging_rs::FCMClient;
-use firebase_messaging_rs::fcm::*;
 use firebase_messaging_rs::topic::*;
-use firebase_messaging_rs::fcm::android::*;
-use firebase_messaging_rs::fcm::ios::*;
-use firebase_messaging_rs::fcm::webpush::*;
 
 // you need to have application_default_credentials.json at $HOME/.config/gcloud directory
 // or export GOOGLE_APPLICATION_CREDENTIALS env to authenticate to Firebase.
