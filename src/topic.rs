@@ -30,33 +30,47 @@ pub trait TopicManagementSupport: GenericGoogleRestAPISupport {
         topic: &str,
         token: &str,
     ) -> Result<HashMap<String, String>, TopicManagementError> {
-        self.post_request(&Self::put_endpoint(token, topic), ())
-            .await
+        // `access_token_auth` enables authorization based on oauth2 access_token. Without this, We must use unsafe serverKey.
+        // https://github.com/firebase/firebase-admin-go/blob/beaa6ae763d2fb57650760b9703cd91cc7c14b9b/messaging/topic_mgt.go#L69
+        self.post_request_with(
+            &Self::put_endpoint(token, topic),
+            (),
+            &[("access_token_auth", "true")],
+        )
+        .await
     }
 
     /// [register_tokens_to_topic] registers tokens to topic.
     /// * topic - topic to follow. You don't need to add `/topics/` prefix.
-    /// * tokens - registration tokens to be associated with the topic.
+    /// * tokens - A non-empty list of device registration tokens to be associated with the topic. List may not have more than 1000 elements and any list element must not be empty.
     async fn register_tokens_to_topic(
         &self,
         topic: String,
         tokens: Vec<String>,
     ) -> Result<TopicManagementResponse, TopicManagementError> {
         let req = Request::subscribe(format!("/topics/{topic}"), tokens);
-        self.post_request(&format!("{BATCH_ENDPOINT}:batchAdd"), req)
-            .await
+        self.post_request_with(
+            &format!("{BATCH_ENDPOINT}:batchAdd"),
+            req,
+            &[("access_token_auth", "true")],
+        )
+        .await
     }
     /// [unregister_tokens_from_topic] unregisters tokens from topic.
     /// * topic - topic to follow. You don't need to add `/topics/` prefix.
-    /// * tokens - registration tokens to be unregistered from the topic.
+    /// * tokens - A non-empty list of device registration tokens to be unregistered from the topic. List may not have more than 1000 elements.
     async fn unregister_tokens_from_topic(
         &self,
         topic: &str,
         tokens: Vec<String>,
     ) -> Result<TopicManagementResponse, TopicManagementError> {
         let req = Request::unsubscribe(format!("/topics/{topic}"), tokens);
-        self.post_request(&format!("{BATCH_ENDPOINT}:batchRemove"), req)
-            .await
+        self.post_request_with(
+            &format!("{BATCH_ENDPOINT}:batchRemove"),
+            req,
+            &[("access_token_auth", "true")],
+        )
+        .await
     }
     /// [get_info_by_iid_token] get information about topics accosiated to the given token. Information may contain application id, authorized_entity, platform, etc.
     ///
@@ -75,7 +89,8 @@ pub trait TopicManagementSupport: GenericGoogleRestAPISupport {
         } else {
             format!("{INFO_ENDPOINT}/{token}")
         };
-        self.get_request(&request_url).await
+        self.get_request_with(&request_url, &[("access_token_auth", "true")])
+            .await
     }
 }
 
@@ -152,8 +167,8 @@ impl From<RPCError> for TopicManagementError {
                 msg: format!("unable to deserialize response body to type: {reason}: {source}"),
             },
             RPCError::Unauthorized(msg) => Self::Unauthorized(msg),
-            RPCError::InvalidRequest => Self::InvalidRequest,
-            RPCError::Internal => Self::ServerError,
+            RPCError::InvalidRequest { .. } => Self::InvalidRequest,
+            RPCError::Internal { .. } => Self::ServerError,
             RPCError::Unknown(_) => Self::Unknown,
         }
     }
@@ -238,10 +253,10 @@ impl TopicInfoResponseKind {
 /// ```json
 /// {
 ///    "topics":{
-///       "topicname1":{ "addDate":"2015-07-30"},
-///       "topicname2":{ "addDate":"2015-07-30"},
-///       "topicname3":{"addDate":"2015-07-30"},
-///       "topicname4":{"addDate":"2015-07-30"}
+///       "topicname1": {"addDate":"2015-07-30"},
+///       "topicname2": {"addDate":"2015-07-30"},
+///       "topicname3": {"addDate":"2015-07-30"},
+///       "topicname4": {"addDate":"2015-07-30"}
 ///     }
 ///  }
 /// ```

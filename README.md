@@ -27,7 +27,7 @@ You can choose tls backend from native-tls or rustls.
 ```toml
 firebase-messaging-rs  = {git = "ssh://git@github.com/i10416/firebase-messaging-rs.git", branch = "main", version = "0.4", features = ["rustls"] }
 
-# wip: firebase-messaging-rs = { version = "<version>", features = ["rustls"] }
+# firebase-messaging-rs = { version = "<version>", features = ["rustls"] }
 ```
 
 ## required GCP roles
@@ -51,7 +51,11 @@ If you need fine-grained permissions, see the table bellow and grant required ro
 
 ```rust
 use firebase_messaging_rs::FCMClient;
-use firebase_messaging_rs::topic::TopicManagementSupport;
+use firebase_messaging_rs::fcm::*;
+use firebase_messaging_rs::topic::*;
+use firebase_messaging_rs::fcm::android::*;
+use firebase_messaging_rs::fcm::ios::*;
+use firebase_messaging_rs::fcm::webpush::*;
 
 // you need to have application_default_credentials.json at $HOME/.config/gcloud directory
 // or export GOOGLE_APPLICATION_CREDENTIALS env to authenticate to Firebase.
@@ -89,7 +93,37 @@ let res = client.unregister_token_from_topic(
 ).await.unwrap();
 // => Ok(TopicManagementResponse { results: [{}] })
 
-
+let message = Message::Topic {
+  topic: "example".to_string(),
+  fcm_options: Some(FcmOptions::new("example"))
+  notification: Some(Notification {
+    title: Some("example".to_string()),
+    body: Some("example".to_string()),
+    ..Default::default()
+  }),
+  android: Some(AndroidConfig {
+     priority: Some(AndroidMessagePriority::High),
+     ..Default::default()
+  }),
+  webpush: None,
+  apns: Some(ApnsConfig::new(
+    &Aps {
+      content_available: Some(ContentAvailable::On),
+      ..Default::default()
+    },
+    HashMap::from_iter([
+      ("foo".to_string(),"bar".to_string())
+    ]),
+    Some(
+      ApnsHeaders {
+        apns_push_type: Some(ApnsPushType::Alert),
+        ..Default::default()
+      }
+    )
+  ))
+}
+let res = client.validate(&message).await
+// => Ok(MessageOutput { name: "projects/{project-id}/messages/{id}" })
 ```
 
 
