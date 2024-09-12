@@ -2,9 +2,11 @@ use std::{collections::HashMap, time::Duration};
 
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
-
+/// Android specific options for messages sent through FCM connection server.
 pub mod android;
+/// Apple Push Notification Service specific options.
 pub mod ios;
+/// Webpush protocol options.
 pub mod webpush;
 use crate::{GenericGoogleRestAPISupport, RPCError};
 
@@ -13,11 +15,13 @@ use ios::ApnsConfig;
 use webpush::WebPushConfig;
 
 #[async_trait]
-
+/// [FCMApi] trait supports APIs in <https://firebase.google.com/docs/reference/fcm/rest>
+/// This trait provides firebase cloud messaging utilities.
 pub trait FCMApi: GenericGoogleRestAPISupport {
     fn post_endpoint(project_id: &str) -> String {
         format!("https://fcm.googleapis.com/v1/projects/{project_id}/messages:send")
     }
+    /// Send the message to firebase messaging API.
     async fn send(&self, message: &Message) -> Result<MessageOutput, FCMError> {
         let payload = MessagePayload {
             validate_only: false,
@@ -26,6 +30,7 @@ pub trait FCMApi: GenericGoogleRestAPISupport {
         self.post_request(&Self::post_endpoint(&self.project_id()), &payload)
             .await
     }
+    /// Send the message to firebase messaging API with dry run option.
     async fn validate(&self, message: &Message) -> Result<MessageOutput, FCMError> {
         let payload = MessagePayload {
             validate_only: true,
@@ -37,7 +42,8 @@ pub trait FCMApi: GenericGoogleRestAPISupport {
 }
 
 #[derive(Debug, Serialize)]
-pub struct MessagePayload<'a> {
+/// Message payload sent to firebase messaging API.
+pub(crate) struct MessagePayload<'a> {
     validate_only: bool,
     message: &'a Message,
 }
@@ -81,7 +87,7 @@ impl From<RPCError> for FCMError {
     }
 }
 /// Low-level type representing FCM Message type.
-/// See https://fcm.googleapis.com/$discovery/rest?version=v1 for details.
+/// See <https://fcm.googleapis.com/$discovery/rest?version=v1> for details.
 #[derive(Debug, Serialize)]
 #[serde(untagged)]
 pub enum Message {
@@ -153,6 +159,7 @@ pub enum Message {
 }
 
 #[derive(Debug, Serialize, Default)]
+/// Platform independent options for features provided by the FCM SDKs.
 pub struct FcmOptions {
     /// Label associated with the message's analytics data.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -167,6 +174,7 @@ impl FcmOptions {
 }
 
 #[derive(Debug, Serialize, Default)]
+///  Basic notification template to use across all platforms.
 pub struct Notification {
     /// The notification title.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -178,12 +186,13 @@ pub struct Notification {
     /// and displayed in a notification. JPEG, PNG, BMP have full support across platforms.
     /// Animated GIF and video only work on iOS. WebP and HEIF have varying levels of
     /// support across platforms and platform versions. Android has 1MB image size limit.
-    /// Quota usage and implications/costs for hosting image on Firebase Storage: https://firebase.google.com/pricing
+    /// Quota usage and implications/costs for hosting image on Firebase Storage: <https://firebase.google.com/pricing>
     #[serde(skip_serializing_if = "Option::is_none")]
     pub image: Option<String>,
 }
 
 #[derive(Debug, Deserialize, Clone)]
+/// Payload returned from firebase messaging API.
 pub struct MessageOutput {
     /// "Output Only. The identifier of the message sent, in the format of `projects/*/messages/{message_id}`."
     pub name: String,

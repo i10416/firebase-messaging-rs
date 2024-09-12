@@ -290,6 +290,7 @@ pub struct Color {
 }
 
 #[derive(Debug, Serialize)]
+/// Setting to control when a notification may be proxied.
 pub enum Proxy {
     #[serde(rename = "PROXY_UNSPECIFIED")]
     ProxyUnspecified,
@@ -314,6 +315,15 @@ impl Default for Proxy {
 }
 
 #[derive(Debug, Serialize)]
+/// Set the relative priority for this notification. Priority is an indication
+/// of how much of the user's attention should be consumed by this notification.
+/// Low-priority notifications may be hidden from the user in certain situations,
+/// while the user might be interrupted for a higher-priority notification.
+/// The effect of setting the same priorities may differ slightly on different platforms.
+/// Note this priority differs from [[AndroidMessagePriority]].
+/// This priority is processed by the client after the message has been delivered,
+/// whereas AndroidMessagePriority is an FCM concept that controls when the message
+/// is delivered.
 pub enum NotificationPriority {
     /// If priority is unspecified, notification priority is set to `PRIORITY_DEFAULT`.
     #[serde(rename = "PRIORITY_UNSPECIFIED")]
@@ -347,6 +357,7 @@ impl Default for NotificationPriority {
 }
 
 #[derive(Debug, Serialize)]
+/// Different visibility levels of a notification.
 pub enum Visibility {
     /// If unspecified, default to `Visibility.PRIVATE`.
     #[serde(rename = "VISIBILITY_UNSPECIFIED")]

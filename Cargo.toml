@@ -1,6 +1,6 @@
 [package]
 name = "firebase-messaging-rs"
-version = "0.8.7"
+version = "0.8.8"
 authors = [
   "Yoichiro ITO <contact.110416@gmail.com>"
 ]
@@ -19,8 +19,8 @@ maintenance = { status = "actively-developed" }
 
 [features]
 default = ["topic-management", "native-tls"]
-topic-management = []
 fcm = []
+topic-management = []
 native-tls = ["hyper-tls"]
 rustls = ["hyper-rustls"]
 vendored-tls = ["hyper-tls/vendored"]
