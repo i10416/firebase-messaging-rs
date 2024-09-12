@@ -17,32 +17,9 @@ use hyper_rustls::HttpsConnector;
 #[cfg(feature = "hyper-tls")]
 use hyper_tls::HttpsConnector;
 use serde::Deserialize;
-use std::{env, sync::Arc, time::Duration};
+use std::{sync::Arc, time::Duration};
 
-/// [FCMClient] implements some wrapper functions for google FCM APIs and Instant ID APIs.
-///
-/// On [FCMClient] initialization, it tries to load authorization info from well-known locations.
-///
-/// For example, if you set `GOOGLE_APPLICATION_CREDENTIALS` environment variable pointing to your service account json file,
-/// FCMClient tries to read the file from there.
-///
-/// For details, see https://google.aip.dev/auth/4110
-///
-/// ```no_run
-/// use firebase_messaging_rs::FCMClient;
-/// use firebase_messaging_rs::fcm::*;
-/// use firebase_messaging_rs::topic::*;
-///
-/// #[tokio::main]
-/// async fn main() {
-///   let client = FCMClient::new().await.unwrap();
-///   let _ = client.register_tokens_to_topic(
-///     "topic_name".into(),
-///       vec!["token_0".to_string(),"token_1".to_string()]
-///     ).await;
-///   // => TopicManagementResponse {results: [{}, {"error": "INVALID_ARGUMENT"}, ...] }
-/// }
-/// ```
+#[doc = include_str!("../README.md")]
 #[derive(Clone)]
 pub struct FCMClient {
     http_client: hyper::Client<HttpsConnector<HttpConnector>>,
@@ -51,11 +28,13 @@ pub struct FCMClient {
 }
 
 impl FCMClient {
+    #[cfg(feature = "fcm")]
     fn google_cloud_project() -> Option<String> {
-        env::var("GOOGLE_CLOUD_PROJECT")
-            .or_else(|_| env::var("GCP_PROJECT"))
+        std::env::var("GOOGLE_CLOUD_PROJECT")
+            .or_else(|_| std::env::var("GCP_PROJECT"))
             .ok()
     }
+    /// Create an instance of FCMClient.
     pub async fn new() -> Result<Self, String> {
         #[cfg(feature = "fcm")]
         let project_id = Self::google_cloud_project().ok_or(
@@ -69,6 +48,10 @@ impl FCMClient {
         FCMClient::with_scope(project_id, &GCP_DEFAULT_SCOPES).await
     }
 
+    /// Create an instance of FCMClient with scopes.
+    /// The scopes could be
+    /// - `"https://www.googleapis.com/auth/firebase.messaging"`
+    /// - `"https://www.googleapis.com/auth/cloud-platform"`
     pub async fn with_scope(project_id: &str, scopes: &[String]) -> Result<Self, String> {
         #[cfg(feature = "hyper-tls")]
         let connector = HttpsConnector::new();
@@ -281,15 +264,25 @@ pub enum RPCError {
     BuildRequestFailure(String),
     HttpRequestFailure,
     DecodeFailure,
-    DeserializeFailure { reason: String, source: String },
-    InvalidRequest { details: Option<String> },
-    Internal { retry_after: Option<Duration> },
+    DeserializeFailure {
+        reason: String,
+        source: String,
+    },
+    #[allow(unused)]
+    InvalidRequest {
+        details: Option<String>,
+    },
+    #[allow(unused)]
+    Internal {
+        retry_after: Option<Duration>,
+    },
     Unknown(u16),
 }
 impl RPCError {
     pub fn invalid_request() -> Self {
         Self::InvalidRequest { details: None }
     }
+    #[allow(unused)]
     pub fn invalid_request_descriptive(data: &str) -> Self {
         Self::InvalidRequest {
             details: Some(data.to_string()),
@@ -320,6 +313,7 @@ mod tests {
     #[cfg(feature = "topic-management")]
     use crate::topic::*;
     use crate::FCMClient;
+    #[cfg(feature = "fcm")]
     use std::collections::HashMap;
     #[cfg(feature = "fcm")]
     #[tokio::test{flavor = "multi_thread"}]

@@ -7,14 +7,14 @@ const INFO_ENDPOINT: &str = "https://iid.googleapis.com/iid/info"; // + IID_TOKE
 
 const BATCH_ENDPOINT: &str = "https://iid.googleapis.com/iid/v1";
 
-/// [TopicManagementSupport] trait support APIs in https://developers.google.com/instance-id/reference/server
+/// [TopicManagementSupport] trait support APIs in <https://developers.google.com/instance-id/reference/server>
 /// This trait provides topic management utilities.
 #[async_trait]
 pub trait TopicManagementSupport: GenericGoogleRestAPISupport {
     fn put_endpoint(iid_token: &str, topic_name: &str) -> String {
         format!("https://iid.googleapis.com/iid/v1/{iid_token}/rel/topics/{topic_name}")
     }
-    /// [register_token_to_topic] registers a token to topic.
+    /// [[TopicManagementSupport::register_token_to_topic]] registers a token to topic.
     /// * topic - topic to follow. You don't need to add `/topics/` prefix.
     /// * token - registration token to be associated with the topic.
     ///
@@ -40,7 +40,7 @@ pub trait TopicManagementSupport: GenericGoogleRestAPISupport {
         .await
     }
 
-    /// [register_tokens_to_topic] registers tokens to topic.
+    /// [[TopicManagementSupport::register_tokens_to_topic]] registers tokens to topic.
     /// * topic - topic to follow. You don't need to add `/topics/` prefix.
     /// * tokens - A non-empty list of device registration tokens to be associated with the topic. List may not have more than 1000 elements and any list element must not be empty.
     async fn register_tokens_to_topic(
@@ -56,7 +56,7 @@ pub trait TopicManagementSupport: GenericGoogleRestAPISupport {
         )
         .await
     }
-    /// [unregister_tokens_from_topic] unregisters tokens from topic.
+    /// [[TopicManagementSupport::unregister_tokens_from_topic]] unregisters tokens from topic.
     /// * topic - topic to follow. You don't need to add `/topics/` prefix.
     /// * tokens - A non-empty list of device registration tokens to be unregistered from the topic. List may not have more than 1000 elements.
     async fn unregister_tokens_from_topic(
@@ -72,7 +72,7 @@ pub trait TopicManagementSupport: GenericGoogleRestAPISupport {
         )
         .await
     }
-    /// [get_info_by_iid_token] get information about topics accosiated to the given token. Information may contain application id, authorized_entity, platform, etc.
+    /// [[TopicManagementSupport::get_info_by_iid_token]] get information about topics accosiated to the given token. Information may contain application id, authorized_entity, platform, etc.
     ///
     /// See [TopicInfoResponse] for more detail.
     ///

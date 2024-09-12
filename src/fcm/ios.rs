@@ -19,6 +19,7 @@ impl Serialize for Duration {
 }
 
 #[derive(Debug, Serialize, Default)]
+/// Options for features provided by the FCM SDK for iOS.
 pub struct APNSFcmOptions {
     /// Label associated with the message's analytics data.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -31,7 +32,7 @@ pub struct APNSFcmOptions {
 
 #[derive(Debug, Serialize, Default)]
 /// APNs HTTP headers properties
-/// See https://developer.apple.com/documentation/usernotifications/sending-notification-requests-to-apns
+/// See <https://developer.apple.com/documentation/usernotifications/sending-notification-requests-to-apns>
 pub struct ApnsHeaders {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub authorization: Option<String>,
@@ -105,6 +106,7 @@ impl ApnsHeaders {
 }
 
 #[derive(Debug, Serialize)]
+/// The priority of the notification.
 pub enum ApnsPriority {
     #[serde(rename = "10")]
     SendImmediately,
@@ -115,6 +117,7 @@ pub enum ApnsPriority {
 }
 
 #[derive(Debug, Serialize, Default)]
+/// Apple Push Notification Service specific options.
 pub struct ApnsConfig {
     #[serde(skip_serializing_if = "Option::is_none")]
     payload: Option<serde_json::Value>,
@@ -250,7 +253,7 @@ pub enum ApnsPushType {
     PushToTalk,
 }
 
-/// See https://developer.apple.com/documentation/usernotifications/generating-a-remote-notification
+/// See <https://developer.apple.com/documentation/usernotifications/generating-a-remote-notification>
 #[derive(Debug, Serialize, Default)]
 pub struct Aps {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -279,6 +282,7 @@ pub struct Aps {
 }
 
 #[derive(Debug, Clone, Copy)]
+/// The notification service app extension flag.
 pub enum MutableContent {
     On,
     Off,
@@ -297,6 +301,7 @@ impl Serialize for MutableContent {
 }
 
 #[derive(Debug, Clone, Copy)]
+/// The background notification flag.
 pub enum ContentAvailable {
     On,
     Off,
@@ -314,7 +319,8 @@ impl Serialize for ContentAvailable {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
+/// The information for displaying an alert.
 pub enum Alert {
     Simple(String),
     Structural(Box<RichAlert>),
@@ -332,7 +338,7 @@ impl Serialize for Alert {
     }
 }
 
-#[derive(Debug, Serialize, Default)]
+#[derive(Debug, Serialize, Clone, Default)]
 pub struct RichAlert {
     /// The title of the notification. Apple Watch displays this string in
     /// the short look notification interface. Specify a string that’s quickly
@@ -395,6 +401,7 @@ pub struct RichAlert {
 }
 
 #[derive(Debug)]
+/// The name of a sound file in your app’s main bundle or in the Library/Sounds folder of your app’s container directory.
 pub enum Sound {
     Simple(String),
     Structural {
