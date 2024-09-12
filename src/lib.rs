@@ -154,27 +154,7 @@ pub trait GenericGoogleRestAPISupport {
         &self,
         endpoint: &str,
     ) -> Result<R, E> {
-        let auth_header_value = self
-            .get_header_token()
-            .await
-            .map_err(|_| RPCError::Unauthorized("unable to get header token".into()))
-            .map_err(E::from)?;
-        let req = Request::builder()
-            .uri(endpoint)
-            .method("GET")
-            .header(CONTENT_TYPE, "application/json")
-            .header(ACCEPT, "application/json")
-            .header(AUTHORIZATION, auth_header_value)
-            .body(Body::empty()) // NOTE: what is difference between Body::empty() and ()?
-            .map_err(|e| RPCError::BuildRequestFailure(format!("{e:?}")))
-            .map_err(E::from)?;
-        let res = self
-            .get_http_client()
-            .request(req)
-            .await
-            .map_err(|_| RPCError::HttpRequestFailure) // FIXME: don't swallow error! propagate error info
-            .map_err(E::from)?;
-        Self::handle_response_body(res).await
+        self.get_request_with(endpoint, &[]).await
     }
     async fn get_request_with<R: for<'a> Deserialize<'a> + Clone, E: From<RPCError>>(
         &self,
