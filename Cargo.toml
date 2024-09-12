@@ -1,6 +1,6 @@
 [package]
 name = "firebase-messaging-rs"
-version = "0.8.5"
+version = "0.8.6"
 authors = [
   "Yoichiro ITO <contact.110416@gmail.com>"
 ]
@@ -20,14 +20,14 @@ maintenance = { status = "actively-developed" }
 [features]
 default = ["topic-management", "fcm", "native-tls"]
 topic-management = []
-fcm = ["serde_json"]
+fcm = []
 native-tls = ["hyper-tls"]
 rustls = ["hyper-rustls"]
 vendored-tls = ["hyper-tls/vendored"]
 
 [dependencies]
 serde = { version = "1", features = ["derive"] }
-serde_json = { version = "1", optional = true }
+serde_json = { version = "1" }
 chrono = "0.4"
 log = "0.4"
 gcloud-sdk = { version = "0.24", features = ["rest"] }
