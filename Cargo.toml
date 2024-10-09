@@ -33,7 +33,7 @@ log = "0.4"
 gcloud-sdk = { version = "0.25", features = ["rest"] }
 hyper = { version = "0.14", features = ["client", "http1"] }
 hyper-tls = { version = "0.5", optional = true }
-hyper-rustls = { version = "0.25", optional = true, features = ["rustls-native-certs"] }
+hyper-rustls = { version = "0.27", optional = true, features = ["rustls-native-certs"] }
 http = "0.2"
 async-trait = "0.1"
 
