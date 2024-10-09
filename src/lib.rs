@@ -4,7 +4,6 @@ pub use serde_json;
 pub mod fcm;
 #[cfg(feature = "topic-management")]
 pub mod topic;
-
 use async_trait::async_trait;
 use gcloud_sdk::{GoogleAuthTokenGenerator, TokenSourceType, GCP_DEFAULT_SCOPES};
 use http::{
