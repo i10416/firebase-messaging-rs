@@ -1,3 +1,5 @@
+use http_body_util::Full;
+use hyper::body::{Bytes, Incoming};
 #[cfg(feature = "fcm")]
 pub use serde_json;
 #[cfg(feature = "fcm")]
@@ -10,7 +12,12 @@ use http::{
     header::{ACCEPT, AUTHORIZATION, CONTENT_LENGTH, CONTENT_TYPE},
     HeaderName, Request, Response, StatusCode,
 };
-use hyper::{client::HttpConnector, Body};
+use http_body_util::BodyExt;
+use hyper_util::{
+    client::legacy::{connect::HttpConnector, Client as HyperClient},
+    rt::TokioExecutor,
+};
+
 #[cfg(feature = "hyper-rustls")]
 use hyper_rustls::HttpsConnector;
 #[cfg(feature = "hyper-tls")]
@@ -21,7 +28,7 @@ use std::{sync::Arc, time::Duration};
 #[doc = include_str!("../README.md")]
 #[derive(Clone)]
 pub struct FCMClient {
-    http_client: hyper::Client<HttpsConnector<HttpConnector>>,
+    http_client: HyperClient<HttpsConnector<HttpConnector>, Full<Bytes>>,
     token_gen: Arc<GoogleAuthTokenGenerator>,
     project_id: String,
 }
@@ -68,7 +75,7 @@ impl FCMClient {
             .map_err(|_| "unable to initialize token generator")?;
         Ok(Self {
             token_gen: Arc::new(token_gen),
-            http_client: hyper::Client::builder().build::<_, Body>(connector),
+            http_client: HyperClient::builder(TokioExecutor::new()).build(connector),
             project_id: project_id.to_string(),
         })
     }
@@ -81,7 +88,7 @@ impl crate::fcm::FCMApi for FCMClient {}
 
 #[async_trait]
 impl GenericGoogleRestAPISupport for FCMClient {
-    fn get_http_client(&self) -> hyper::Client<HttpsConnector<HttpConnector>, Body> {
+    fn get_http_client(&self) -> HyperClient<HttpsConnector<HttpConnector>, Full<Bytes>> {
         self.http_client.clone()
     }
     fn project_id(&self) -> String {
@@ -97,7 +104,7 @@ impl GenericGoogleRestAPISupport for FCMClient {
 pub trait GenericGoogleRestAPISupport {
     async fn get_header_token(&self) -> Result<String, gcloud_sdk::error::Error>;
     fn project_id(&self) -> String;
-    fn get_http_client(&self) -> hyper::Client<HttpsConnector<HttpConnector>, Body>;
+    fn get_http_client(&self) -> HyperClient<HttpsConnector<HttpConnector>, Full<Bytes>>;
     async fn post_request<
         P: serde::Serialize + Send + Sync,
         R: for<'a> Deserialize<'a> + Clone,
@@ -137,7 +144,7 @@ pub trait GenericGoogleRestAPISupport {
             builder = builder.header(*key, *value)
         }
         let req = builder
-            .body(Body::from(payload))
+            .body(payload.into())
             .map_err(|e| RPCError::BuildRequestFailure(format!("{e:?}")))
             .map_err(E::from)?;
         let res = self
@@ -175,7 +182,7 @@ pub trait GenericGoogleRestAPISupport {
             builder = builder.header(*key, *value)
         }
         let req = builder
-            .body(Body::empty()) // NOTE: what is difference between Body::empty() and ()?
+            .body(Full::default())
             .map_err(|e| RPCError::BuildRequestFailure(format!("{e:?}")))
             .map_err(E::from)?;
         let res = self
@@ -188,16 +195,18 @@ pub trait GenericGoogleRestAPISupport {
     }
 
     async fn handle_response_body<R: for<'a> Deserialize<'a> + Clone, E: From<RPCError>>(
-        mut res: Response<Body>,
+        res: Response<Incoming>,
     ) -> Result<R, E> {
         match res.status() {
             StatusCode::OK => {
-                let buf = hyper::body::to_bytes(res)
+                let buf = res
+                    .collect()
                     .await
                     .map_err(|_| RPCError::DecodeFailure)
                     .map_err(E::from)?;
-                let text = std::str::from_utf8(&buf).unwrap_or_default();
-                serde_json::from_slice::<R>(&buf)
+                let bytes = buf.to_bytes();
+                let text = std::str::from_utf8(&bytes).unwrap_or_default();
+                serde_json::from_slice::<R>(&bytes)
                     .map_err(|e| RPCError::DeserializeFailure {
                         reason: format!("{e:?}"),
                         source: text.to_string(),
@@ -211,10 +220,8 @@ pub trait GenericGoogleRestAPISupport {
             }
             .map_err(E::from),
             StatusCode::BAD_REQUEST => {
-                let data = hyper::body::to_bytes(res.body_mut())
-                    .await
-                    .map_err(|_| RPCError::DecodeFailure)?;
-                let data = String::from_utf8(data.to_vec()).ok();
+                let data = res.collect().await.map_err(|_| RPCError::DecodeFailure)?;
+                let data = String::from_utf8(data.to_bytes().to_vec()).ok();
                 Err(E::from(RPCError::InvalidRequest { details: data }))
             }
             e if e.is_client_error() => Err(E::from(RPCError::invalid_request())),
