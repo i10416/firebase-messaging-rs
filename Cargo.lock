@@ -470,9 +470,9 @@ dependencies = [
 
 [[package]]
 name = "gcloud-sdk"
-version = "0.25.7"
+version = "0.25.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2a1130d4e37435a63bd9d968a33c11b64bf35a2013779a353e29cd3598989d39"
+checksum = "0775bfa745cdf7287ae9765a685a813b91049b6b6d5ca3de20a3d5d16a80d8b2"
 dependencies = [
  "async-trait",
  "bytes",
